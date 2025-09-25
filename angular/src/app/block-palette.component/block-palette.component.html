@@ -1,0 +1,38 @@
+<div class="overlay" *ngIf="open" (click)="doClose()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="head">
+      <input type="search" placeholder="Find questions, input fields and layout options..." [ngModel]="q()" (ngModelChange)="q.set($event)" />
+    </div>
+
+    <div class="body">
+      <aside class="list">
+        <div class="cat">Questions</div>
+        <div class="items">
+          <button
+            *ngFor="let b of filtered(); let i = index; trackBy: trackById"
+            class="row"
+            [class.active]="i === hoverIndex()"
+            (mouseenter)="pick(i)"
+            (click)="pick(i)">
+            <span class="icon">•</span>
+            <span class="label">{{ b.name }}</span>
+          </button>
+        </div>
+      </aside>
+
+      <section class="detail" *ngIf="selected() as s">
+        <div class="desc">
+          <h3>{{ s.name }}</h3>
+          <p>{{ s.description }}</p>
+          <button class="insert" (click)="doInsert()">Insert →</button>
+        </div>
+        <div class="example">
+          <div class="tag" *ngIf="s.exampleLabel">{{ s.exampleLabel }}</div>
+          <div class="preview" [innerHTML]="s.exampleHtml"></div>
+        </div>
+      </section>
+
+      <section class="empty" *ngIf="!selected()">Insert anything</section>
+    </div>
+  </div>
+</div>

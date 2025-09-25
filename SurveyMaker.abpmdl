@@ -1,0 +1,101 @@
+{
+  "template": "app",
+  "imports": {
+    "Volo.Abp.LeptonXLiteTheme": {
+      "version": "4.3.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.Account": {
+      "version": "9.3.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.OpenIddict": {
+      "version": "9.3.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.Identity": {
+      "version": "9.3.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.TenantManagement": {
+      "version": "9.3.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.SettingManagement": {
+      "version": "9.3.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.PermissionManagement": {
+      "version": "9.3.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.FeatureManagement": {
+      "version": "9.3.2",
+      "isInstalled": true
+    }
+  },
+  "folders": {
+    "items": {
+      "src": {},
+      "test": {}
+    }
+  },
+  "packages": {
+    "SurveyMaker.Application": {
+      "path": "src/SurveyMaker.Application/SurveyMaker.Application.abppkg",
+      "folder": "src"
+    },
+    "SurveyMaker.Application.Tests": {
+      "path": "test/SurveyMaker.Application.Tests/SurveyMaker.Application.Tests.abppkg",
+      "folder": "test"
+    },
+    "SurveyMaker.Domain.Shared": {
+      "path": "src/SurveyMaker.Domain.Shared/SurveyMaker.Domain.Shared.abppkg",
+      "folder": "src"
+    },
+    "SurveyMaker.Application.Contracts": {
+      "path": "src/SurveyMaker.Application.Contracts/SurveyMaker.Application.Contracts.abppkg",
+      "folder": "src"
+    },
+    "SurveyMaker.HttpApi": {
+      "path": "src/SurveyMaker.HttpApi/SurveyMaker.HttpApi.abppkg",
+      "folder": "src"
+    },
+    "SurveyMaker.HttpApi.Client": {
+      "path": "src/SurveyMaker.HttpApi.Client/SurveyMaker.HttpApi.Client.abppkg",
+      "folder": "src"
+    },
+    "SurveyMaker.EntityFrameworkCore.Tests": {
+      "path": "test/SurveyMaker.EntityFrameworkCore.Tests/SurveyMaker.EntityFrameworkCore.Tests.abppkg",
+      "folder": "test"
+    },
+    "SurveyMaker.EntityFrameworkCore": {
+      "path": "src/SurveyMaker.EntityFrameworkCore/SurveyMaker.EntityFrameworkCore.abppkg",
+      "folder": "src"
+    },
+    "SurveyMaker.TestBase": {
+      "path": "test/SurveyMaker.TestBase/SurveyMaker.TestBase.abppkg",
+      "folder": "test"
+    },
+    "SurveyMaker.Domain.Tests": {
+      "path": "test/SurveyMaker.Domain.Tests/SurveyMaker.Domain.Tests.abppkg",
+      "folder": "test"
+    },
+    "SurveyMaker.HttpApi.Client.ConsoleTestApp": {
+      "path": "test/SurveyMaker.HttpApi.Client.ConsoleTestApp/SurveyMaker.HttpApi.Client.ConsoleTestApp.abppkg",
+      "folder": "test"
+    },
+    "SurveyMaker.DbMigrator": {
+      "path": "src/SurveyMaker.DbMigrator/SurveyMaker.DbMigrator.abppkg",
+      "folder": "src"
+    },
+    "SurveyMaker.HttpApi.Host": {
+      "path": "src/SurveyMaker.HttpApi.Host/SurveyMaker.HttpApi.Host.abppkg",
+      "folder": "src"
+    },
+    "SurveyMaker.Domain": {
+      "path": "src/SurveyMaker.Domain/SurveyMaker.Domain.abppkg",
+      "folder": "src"
+    }
+  }
+}

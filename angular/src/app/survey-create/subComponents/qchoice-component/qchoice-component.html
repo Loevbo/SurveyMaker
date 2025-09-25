@@ -1,0 +1,15 @@
+<div class="row">
+    @if (q && q.options.length > 0) {
+        <div class="option-pill" *ngFor="let opt of q.options; let i = index" (click)="$event.stopPropagation()">
+            <iconify-icon [icon]="multi ? 'lucide:square' : 'lucide:circle'" style="font-size:16px;color:var(--foreground)"></iconify-icon>
+            <input class="opt-input"
+                    [value]="opt.label"
+                    (input)="onLabel(i, $any($event.target).value)">
+        </div>
+    }
+
+    <div class="option-pill pill-add" (click)="addOpt()">
+        <iconify-icon icon="lucide:plus" style="font-size:16px;color:var(--muted-foreground)"></iconify-icon>
+        Add option
+    </div>
+</div>

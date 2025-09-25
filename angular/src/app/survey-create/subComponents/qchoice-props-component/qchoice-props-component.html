@@ -1,0 +1,46 @@
+<ng-container *ngIf="q() as q">
+  <section class="prop-section">
+    <label class="prop-label">Question title</label>
+    <input class="prop-input"
+           [value]="q.title"
+           (input)="setTitle($any($event.target).value)">
+  </section>
+
+  <section class="prop-section">
+    <div class="prop-row between">
+      <div class="prop-label">Options</div>
+      <button class="btn tiny" (click)="add()">Add option</button>
+    </div>
+
+    <div class="opt-row" *ngFor="let opt of q.options; let i = index">
+      <input class="prop-input"
+             [value]="opt.label"
+             (input)="rename(i, $any($event.target).value)">
+      <button class="btn icon" (click)="remove(i)" title="Remove">✕</button>
+    </div>
+  </section>
+
+  <section class="prop-section">
+    <label class="prop-check">
+      <input type="checkbox"
+             [checked]="q.props.shuffle"
+             (change)="setShuffle($any($event.target).checked)">
+      Shuffle options
+    </label>
+
+    <label class="prop-check">
+      <input type="checkbox"
+             [checked]="q.props.other"
+             (change)="setOther($any($event.target).checked)">
+      Include “Other”
+    </label>
+
+    <label class="prop-label">Layout</label>
+    <select class="prop-input"
+            [value]="q.props.layout"
+            (change)="setLayout($any($event.target).value)">
+      <option value="list">List</option>
+      <option value="grid">Grid</option>
+    </select>
+  </section>
+</ng-container>
