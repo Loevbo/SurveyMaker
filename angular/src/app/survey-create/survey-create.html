@@ -1,262 +1,192 @@
 <div class="_main">
-    <div class="_app">
-        <div class="topbar">
-            <div class="topbar_left">
-                <iconify-icon icon="lucide:square-gantt" style="font-size: 20px; color: var(--foreground)"></iconify-icon>
-                <div class="topbar_title">Survey Builder</div>
+  <div class="_app">
+    <div class="topbar">
+      <div class="topbar_left">
+        <iconify-icon
+          icon="lucide:square-gantt"
+          style="font-size: 20px; color: var(--foreground)"
+        ></iconify-icon>
+        <div class="topbar_title">Survey Builder</div>
 
-                <!-- VIEW MODE -->
-                 @if (!editingTitle) {
-                     <div class="title-input" (click)="beginEditTitle()">
-                         <iconify-icon icon="lucide:edit-3" style="font-size:18px;color:var(--muted-foreground)"></iconify-icon>
-                         <span class="title-text">{{ doc().title || 'Untitled survey' }}</span>
-                    </div>
-                }  @else {
-                    <!-- EDIT MODE -->
-                    <div class="title-input editing">
-                        <iconify-icon icon="lucide:edit-3" style="font-size:18px;color:var(--muted-foreground)"></iconify-icon>
-                        <input
-                            #titleBox
-                            class="title-field"
-                            [value]="doc().title"
-                            (input)="onTitleInput(titleBox.value)"
-                            (keydown.enter)="commitTitle()"
-                            (keydown.escape)="cancelTitle()"
-                            (blur)="commitTitle()"
-                        />
-                    </div>
-                }
-
-
-                <div class="chip">Autosaved</div>
-            </div>
-            <div class="topbar_actions">
-                <div class="btn ghost" (click)="store.undo()" [class.disabled]="!store.canUndo()">
-                    <iconify-icon icon="lucide:rotate-ccw" style="font-size: 18px; color: var(--foreground)"></iconify-icon>
-                    Undo
-                </div>
-                <div class="btn ghost" (click)="store.redo()" [class.disabled]="!store.canRedo()">
-                    <iconify-icon icon="lucide:rotate-cw" style="font-size: 18px; color: var(--foreground)"></iconify-icon>
-                    Redo
-                </div>
-                <div class="btn">
-                    <iconify-icon icon="lucide:eye" style="font-size: 18px; color: var(--secondary-foreground)"></iconify-icon>
-                    Preview
-                </div>
-                <div class="btn">
-                    <iconify-icon icon="lucide:save" style="font-size: 18px; color: var(--secondary-foreground)"></iconify-icon>
-                    Save
-                </div>
-                <div class="btn primary">
-                    <iconify-icon icon="lucide:send" style="font-size: 18px; color: var(--primary-foreground)"></iconify-icon>
-                    Publish
-                </div>
-            </div>
+        <!-- VIEW MODE -->
+        @if (!editingTitle) {
+        <div class="title-input" (click)="beginEditTitle()">
+          <iconify-icon
+            icon="lucide:edit-3"
+            style="font-size: 18px; color: var(--muted-foreground)"
+          ></iconify-icon>
+          <span class="title-text">{{ doc().title || 'Untitled survey' }}</span>
         </div>
-        <div class="layout">
-            <aside class="sidebar">
-                <div class="sidebar-header">
-                    Question types
+        } @else {
+        <!-- EDIT MODE -->
+        <div class="title-input editing">
+          <iconify-icon
+            icon="lucide:edit-3"
+            style="font-size: 18px; color: var(--muted-foreground)"
+          ></iconify-icon>
+          <input
+            #titleBox
+            class="title-field"
+            [value]="doc().title"
+            (input)="onTitleInput(titleBox.value)"
+            (keydown.enter)="commitTitle()"
+            (keydown.escape)="cancelTitle()"
+            (blur)="commitTitle()"
+          />
+        </div>
+        }
+
+        <div class="chip">Autosaved</div>
+      </div>
+      <div class="topbar_actions">
+        <div class="btn ghost" (click)="store.undo()" [class.disabled]="!store.canUndo()">
+          <iconify-icon
+            icon="lucide:rotate-ccw"
+            style="font-size: 18px; color: var(--foreground)"
+          ></iconify-icon>
+          Undo
+        </div>
+        <div class="btn ghost" (click)="store.redo()" [class.disabled]="!store.canRedo()">
+          <iconify-icon
+            icon="lucide:rotate-cw"
+            style="font-size: 18px; color: var(--foreground)"
+          ></iconify-icon>
+          Redo
+        </div>
+        <div class="btn">
+          <iconify-icon
+            icon="lucide:eye"
+            style="font-size: 18px; color: var(--secondary-foreground)"
+          ></iconify-icon>
+          Preview
+        </div>
+        <div class="btn">
+          <iconify-icon
+            icon="lucide:save"
+            style="font-size: 18px; color: var(--secondary-foreground)"
+          ></iconify-icon>
+          Save
+        </div>
+        <div class="btn primary">
+          <iconify-icon
+            icon="lucide:send"
+            style="font-size: 18px; color: var(--primary-foreground)"
+          ></iconify-icon>
+          Publish
+        </div>
+      </div>
+    </div>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="sidebar-header">Question types</div>
+        <div class="search">Search...</div>
+        <div
+          class="library"
+          cdkDropList
+          id="palette"
+          [cdkDropListConnectedTo]="['canvas']"
+          [cdkDropListSortingDisabled]="true"
+        >
+          @for (def of catalog; track def.title) {
+          <div class="library-item" cdkDrag [cdkDragData]="{ source: 'palette', type: def.type }">
+            <iconify-icon
+              [icon]="def.icon"
+              style="font-size: 20px; color: var(--sidebar-foreground)"
+            ></iconify-icon>
+            <div class="meta">
+              <div class="title">{{ def.title }}</div>
+              <div class="sub">{{ def.sub }}</div>
+            </div>
+            <ng-template cdkDragPreview>
+              <div class="library-item preview">
+                <iconify-icon [icon]="def.icon"></iconify-icon>
+                <div class="meta">
+                  <div class="title">{{ def.title }}</div>
+                  <div class="sub">{{ def.sub }}</div>
                 </div>
-                <div class="search">
-                    Search...
-                </div>
-                <div class="library"
-                cdkDropList
-                id="palette"
-                [cdkDropListConnectedTo]="['canvas']"
-                [cdkDropListSortingDisabled]="true">
-                    @for (def of catalog; track def.title) {
-                        <div class="library-item"
-                            cdkDrag
-                            [cdkDragData]="{ source: 'palette', type: def.type }">
-                        <iconify-icon [icon]="def.icon" style="font-size:20px;color:var(--sidebar-foreground)"></iconify-icon>
-                        <div class="meta">
-                            <div class="title">{{ def.title }}</div>
-                            <div class="sub">{{ def.sub }}</div>
-                        </div>
-                        <ng-template cdkDragPreview>
-                            <div class="library-item preview">
-                            <iconify-icon [icon]="def.icon"></iconify-icon>
-                            <div class="meta">
-                                <div class="title">{{ def.title }}</div>
-                                <div class="sub">{{ def.sub }}</div>
-                            </div>
-                            </div>
-                        </ng-template>
-                        </div>
-                    }
-                </div>
-                <div class="hint">
-                    Drag a question to the canvas to add it to your survey.
-                </div>
-            </aside>
-            <main class="canvas-wrap">
-                <div class="toolbar">
-                    <div class="toolbar-left">
-                        <div class="chip">
-                            Live preview
-                        </div>
-                        <div class="chip">
-                            Desktop
-                        </div>
-                    </div>
-                    <div class="toolbar-right">
-                        <div class="btn ghost">
-                            <iconify-icon icon="lucide:layout-list" style="font-size: 18px; color: var(--foreground)"></iconify-icon>
-                            Reorder
-                        </div>
-                        <!-- <div class="btn ghost">
+              </div>
+            </ng-template>
+          </div>
+          }
+        </div>
+        <div class="hint">Drag a question to the canvas to add it to your survey.</div>
+      </aside>
+      <main class="canvas-wrap">
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <div class="chip">Live preview</div>
+            <div class="chip">Desktop</div>
+          </div>
+          <div class="toolbar-right">
+            <div class="btn ghost">
+              <iconify-icon
+                icon="lucide:layout-list"
+                style="font-size: 18px; color: var(--foreground)"
+              ></iconify-icon>
+              Reorder
+            </div>
+            <!-- <div class="btn ghost">
                             <iconify-icon icon="lucide:trash-2" style="font-size: 18px; color: var(--foreground)"></iconify-icon>
                             Clear
                         </div> -->
-                    </div>
-                </div>
-                <div class="canvas">
-                    <div class="_c">
-                        <div class="header">
-                            <div class="title">
-                                {{ doc().title || 'Untitled survey' }}
-                            </div>
-                            <div class="muted">
-                                You questions will appear below. Drag in a question type to get started.
-                            </div>
-                        </div>
-                        <div class="dropzone"
-                        cdkDropList
-                        id="canvas"
-                        [cdkDropListConnectedTo]="['palette']"
-                        (cdkDropListDropped)="onCanvasDrop($event)">
-
-                            @for (q of page().questions; track q.id; let i = $index) {
-                                <div class="question-card active"
-                                    cdkDrag
-                                    [cdkDragData]="{ source: 'canvas', pageId: page().id, questionId: q.id, index: i }">
-                                <!-- question UI ... -->
-                                <div class="qc-head">
-                                    <div class="inline">
-                                        <div>
-                                            <div class="qc-title">{{ q.title }}</div>
-                                            <div class="desc">Ask one clear question and offer a few options.</div>
-                                        </div>
-                                    </div>
-                                        <div class="qc-actions">
-                                            <div class="btn icon ghost">
-                                                <iconify-icon icon="lucide:grip-vertical" style="font-size: 18px; color: var(--foreground)"></iconify-icon>
-                                            </div>
-                                            <div class="btn icon ghost">
-                                                <iconify-icon icon="lucide:copy" style="font-size: 18px; color: var(--foreground)"></iconify-icon>
-                                            </div>
-                                            <div class="btn icon ghost" (click)="openProps(q.id)">
-                                                <iconify-icon icon="lucide:settings" style="font-size: 18px; color: var(--foreground)"></iconify-icon>
-                                            </div>
-                                            <div class="btn primary">
-                                                <iconify-icon icon="lucide:check" style="font-size: 18px; color: var(--primary-foreground)"></iconify-icon> Done 
-                                            </div> 
-                                        </div>
-                                    </div>
-                                    <div class="qc-body">
-                                        @switch (q.type) {
-                                          @case ('singleChoice') {
-                                            <app-qchoice-component></app-qchoice-component>
-                                          }
-                                        }
-                                    </div>
-                                </div>
-                            }
-
-                            <div class="canvas-placeholder" *cdkDropListPlaceholder></div>
-                        </div>
-                    </div>
-                </div>
-            </main>
-            <aside class="rightpanel">
-                <div class="rp-header">Properties</div>
-
-                @if (store.selectedQuestion()) {
-                    @switch (store.selectedQuestion()!.type) {
-                    @case ('singleChoice') { <app-qchoice-props /> }
-                    @case ('multiChoice')  { <app-qchoice-props /> }
-                    @case ('shortText')    { <app-q-text-props /> }
-                    @case ('longText')     { <app-q-text-props /> }
-                    @case ('rating')       { <app-q-rating-props /> }
-                    @case ('date')         { <app-q-date-props /> }
-                    }
-                } @else {
-                    <div class="rp-empty">Select a question to edit its properties.</div>
-                }
-
-
-                <div class="rp-section">
-                    <div class="label">Question title</div>
-                    <div class="input">
-                        <input />
-                    </div>
-                    <div class="label">Question text</div>
-                    <div class="textarea">
-                        <textarea></textarea>
-                    </div>
-                    <div class="options-editor">
-                        <div class="option-row">
-                            <div class="icon-picker">
-                                <iconify-icon icon="lucide:mail" style="font-size: 18px; color: var(--foreground)"></iconify-icon>
-                            </div>
-                            <div class="text-input input">
-                                <input value="Email" />
-                            </div>
-                            <div class="suffix">
-                                <div class="btn ghost">
-                                    <iconify-icon icon="lucide:trash-2" style="font-size: 16px; color: var(--foreground)"></iconify-icon>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="option-row">
-                            <div class="icon-picker">
-                                <iconify-icon icon="lucide:mail" style="font-size: 18px; color: var(--foreground)"></iconify-icon>
-                            </div>
-                            <div class="text-input input">
-                                <input value="Email" />
-                            </div>
-                            <div class="suffix">
-                                <div class="btn ghost">
-                                    <iconify-icon icon="lucide:trash-2" style="font-size: 16px; color: var(--foreground)"></iconify-icon>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="btn ghost-action">
-                                <iconify-icon icon="lucide:plus" style="font-size: 16px; color: var(--muted-foreground)"></iconify-icon>
-                                Add option
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="rp-section">
-                    <div class="label">
-                        Validation
-                    </div>
-                    <div class="row space-between">
-                        <div>Required</div>
-                        <div class="toggle on">
-                            <div class="knob"></div>
-                        </div>
-                    </div>
-                    <div class="row space-between">
-                        <div>Min selections</div>
-                        <div class="number">
-                            <input type="number" />
-                        </div>
-                    </div>
-                    <div class="row space-between">
-                        <div>Max selections</div>
-                        <div class="number">
-                            <input type="number" />
-                        </div>
-                    </div>
-                </div>
-                <div class="rp-section"></div>
-                <div class="rp-section"></div>
-            </aside>
+          </div>
         </div>
+        <div class="canvas">
+          <div class="_c">
+            <div class="header">
+              <div class="title">{{ doc().title || 'Untitled survey' }}</div>
+              <div class="muted">
+                You questions will appear below. Drag in a question type to get started.
+              </div>
+            </div>
+            <div
+              class="dropzone"
+              cdkDropList
+              id="canvas"
+              [cdkDropListConnectedTo]="['palette']"
+              (cdkDropListDropped)="onCanvasDrop($event)"
+            >
+              @for (q of page().questions; track q.id; let i = $index) {
+              <div
+                class="question-card"
+                [class.active]="store.selectedQuestionId() === q.id"
+                aria-selected="{{ store.selectedQuestionId() === q.id }}"
+                cdkDrag
+                [cdkDragData]="{ source: 'canvas', pageId: page().id, questionId: q.id, index: i }"
+              >
+                <!-- question UI ... -->
+                @switch (q.type) { @case ('singleChoice') {
+                <app-qchoice-component
+                  [q]="q"
+                  [multi]="q.type === 'singleChoice'"
+                ></app-qchoice-component>
+                } @case ('multiChoice') {
+                <app-qchoice-component
+                  [q]="q"
+                  [multi]="q.type === 'multiChoice'"
+                ></app-qchoice-component>
+                } }
+              </div>
+              }
+
+              <div class="canvas-placeholder" *cdkDropListPlaceholder></div>
+            </div>
+          </div>
+        </div>
+      </main>
+      <aside class="rightpanel">
+        <div class="rp-header">Properties</div>
+
+        @if (store.selectedQuestion()) { @switch (store.selectedQuestion()!.type) { @case
+        ('singleChoice') {
+        <app-qchoice-props style="display: flex; flex-direction: column; height: 100%" /> } @case
+        ('multiChoice') {
+        <app-qchoice-props style="display: flex; flex-direction: column; height: 100%" /> } @case
+        ('shortText') { <app-q-text-props /> } @case ('longText') { <app-q-text-props /> } @case
+        ('rating') { <app-q-rating-props /> } @case ('date') { <app-q-date-props /> } } } @else {
+        <div class="rp-empty">Select a question to edit its properties.</div>
+        }
+      </aside>
     </div>
+  </div>
 </div>

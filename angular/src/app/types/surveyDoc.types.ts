@@ -11,12 +11,14 @@ export type Id = string;
 export interface Option {
   id: Id;
   label: string;
+  icon: string;
 }
 
 interface BaseQuestion {
   id: Id;
   type: QuestionType;
   title: string;
+  helpText?: string;
   required: boolean;
   rules: any[];
 }
@@ -28,6 +30,10 @@ export interface ChoiceQuestion extends BaseQuestion {
     shuffle: boolean;
     other: boolean;
     layout: 'list' | 'grid';
+
+    // NEW
+    minSelect: number;          // 0..n for multi, 1 for single
+    maxSelect?: number | null;  // null => unlimited; for single it's 1
   };
 }
 

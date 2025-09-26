@@ -1,46 +1,97 @@
-<ng-container *ngIf="q() as q">
-  <section class="prop-section">
-    <label class="prop-label">Question title</label>
-    <input class="prop-input"
-           [value]="q.title"
-           (input)="setTitle($any($event.target).value)">
-  </section>
+@if(q()) {
 
-  <section class="prop-section">
-    <div class="prop-row between">
-      <div class="prop-label">Options</div>
-      <button class="btn tiny" (click)="add()">Add option</button>
+<div class="rp-section">
+  <div class="label">Question title</div>
+  <div class="input">
+    <input
+      [value]="q()!.title"
+      (input)="setTitle($event.target.value)"
+      (blur)="commitEdit()"
+      (focus)="startEdit('title')"
+    />
+  </div>
+  <div class="label">Question text</div>
+  <div class="textarea">
+    <textarea
+      (input)="setDesc($event.target.value)"
+      (focus)="startEdit('help')"
+      (blur)="commitEdit()"
+    >
+{{ q()!.helpText ?? '' }}</textarea
+    >
+  </div>
+  <div class="options-editor">
+    @if (q().options.length > 0) { @for (opt of q().options; track opt.id; let i = $index) {
+    <div class="option-row">
+      <app-icon-picker
+        #picker
+        [icon]="opt.icon || 'lucide:shapes'"
+        (picked)="onPickIcon(opt.id, $event)"
+      >
+      </app-icon-picker>
+
+      <div class="text-input input">
+        <input [value]="opt.label" (input)="onLabel(opt.id, $any($event.target).value)" />
+      </div>
+      <div class="suffix">
+        <div class="btn ghost" (click)="removeById(opt.id, $event)" title="Remove">
+          <iconify-icon
+            icon="lucide:trash-2"
+            style="font-size: 16px; color: var(--foreground)"
+          ></iconify-icon>
+        </div>
+      </div>
     </div>
+    } }
 
-    <div class="opt-row" *ngFor="let opt of q.options; let i = index">
-      <input class="prop-input"
-             [value]="opt.label"
-             (input)="rename(i, $any($event.target).value)">
-      <button class="btn icon" (click)="remove(i)" title="Remove">✕</button>
+    <div class="row">
+      <div class="btn ghost-action" (click)="add()">
+        <iconify-icon
+          icon="lucide:plus"
+          style="font-size: 16px; color: var(--muted-foreground)"
+        ></iconify-icon>
+        Add option
+      </div>
     </div>
-  </section>
+  </div>
+</div>
+<div class="rp-section">
+  <div class="label">Validation</div>
+  <div class="row space-between">
+    <div>Required</div>
+    <div class="toggle on">
+      <div class="knob"></div>
+    </div>
+  </div>
+  <div class="row space-between">
+    <div>Min selections</div>
+    <div class="number">
+      <input type="number" />
+    </div>
+  </div>
+  <div class="row space-between">
+    <div>Max selections</div>
+    <div class="number">
+      <input type="number" />
+    </div>
+  </div>
+</div>
+<div class="panel-footer">
+  <div
+    class="btn delete fixed"
+    [class.counting]="isCounting"
+    [class.armed]="isArmed"
+    [disabled]="!isArmed"
+    (mouseenter)="armDelete()"
+    (mouseleave)="disarmDelete()"
+    (click)="confirmDelete()"
+    type="button"
+    aria-live="polite"
+  >
+    <span class="sizer">Delete</span>
 
-  <section class="prop-section">
-    <label class="prop-check">
-      <input type="checkbox"
-             [checked]="q.props.shuffle"
-             (change)="setShuffle($any($event.target).checked)">
-      Shuffle options
-    </label>
-
-    <label class="prop-check">
-      <input type="checkbox"
-             [checked]="q.props.other"
-             (change)="setOther($any($event.target).checked)">
-      Include “Other”
-    </label>
-
-    <label class="prop-label">Layout</label>
-    <select class="prop-input"
-            [value]="q.props.layout"
-            (change)="setLayout($any($event.target).value)">
-      <option value="list">List</option>
-      <option value="grid">Grid</option>
-    </select>
-  </section>
-</ng-container>
+    <!-- actual visible text -->
+    <span class="label"> {{ isCounting ? countdown : 'Delete' }} </span>
+  </div>
+</div>
+}

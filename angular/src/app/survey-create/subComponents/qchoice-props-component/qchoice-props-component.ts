@@ -1,44 +1,190 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
+import { IconPickerComponent } from 'src/app/shared/icon-picker/icon-picker-component/icon-picker-component';
 import { SurveyStore } from 'src/app/stores/survey-store';
 import { ChoiceQuestion } from 'src/app/types/surveyDoc.types';
 
 @Component({
   selector: 'app-qchoice-props',
-  standalone:true,
-  imports: [CommonModule],
+  standalone: true,
+  imports: [CommonModule, IconPickerComponent],
   templateUrl: './qchoice-props-component.html',
-  styleUrl: './qchoice-props-component.scss'
+  styleUrl: './qchoice-props-component.scss',
 })
 export class QChoicePropsComponent {
   private store = inject(SurveyStore);
 
-  // typed computed question (will re-render on any change)
-  q = computed(() => this.store.selectedQuestion() as ChoiceQuestion | undefined);
+  q = computed<ChoiceQuestion | undefined>(() => {
+    const anyQ = this.store.selectedQuestion();
+    return anyQ && (anyQ.type === 'singleChoice' || anyQ.type === 'multiChoice')
+      ? (anyQ as ChoiceQuestion)
+      : undefined;
+  });
 
-  private id() { return this.q()!.id; }
+  isSingle = () => this.q()?.type === 'singleChoice';
 
-  setTitle(v: string) {
-    this.store.updateQuestion<ChoiceQuestion>(this.id(), 'Edit choice title', q => q.title = v, { batch: true });
+  setDesc(v: string) {
+    const id = this.q()!.id;
+    this.store.updateQuestion<ChoiceQuestion>(
+      id,
+      q => {
+        q.helpText = v; // if you added a description prop
+      },
+      { batch: true, label: 'Edit text' }
+    );
   }
+
   add() {
-    this.store.updateQuestion<ChoiceQuestion>(this.id(), 'Add option', q => {
-      q.options.push({ id: crypto.randomUUID?.() ?? Math.random().toString(36).slice(2), label: 'Option' });
-    });
+    const id = this.q()!.id;
+    this.store.addChoiceOption(id, 'Option');
   }
   rename(i: number, v: string) {
-    this.store.updateQuestion<ChoiceQuestion>(this.id(), 'Rename option', q => q.options[i].label = v, { batch: true });
+    const id = this.q()!.id;
+    this.store.update(
+      'Edit option',
+      d => {
+        for (const p of d.pages) {
+          const qq = p.questions.find(x => x.id === id) as ChoiceQuestion | undefined;
+          if (qq) {
+            qq.options[i].label = v;
+            break;
+          }
+        }
+      },
+      { batch: true }
+    );
   }
-  remove(i: number) {
-    this.store.updateQuestion<ChoiceQuestion>(this.id(), 'Remove option', q => q.options.splice(i, 1));
+
+  setRequired(on: boolean) {
+    const q = this.q()!;
+    this.store.updateQuestion<ChoiceQuestion>(
+      q.id,
+      draft => {
+        draft.required = on;
+        if (draft.type === 'singleChoice') {
+          draft.props.minSelect = 1;
+          draft.props.maxSelect = 1;
+        } else {
+          if (on && draft.props.minSelect < 1) draft.props.minSelect = 1;
+        }
+      },
+      { label: 'Toggle required' }
+    );
   }
-  setShuffle(v: boolean) {
-    this.store.updateQuestion<ChoiceQuestion>(this.id(), 'Toggle shuffle', q => q.props.shuffle = v);
+
+  setMin(v: string) {
+    const q = this.q()!;
+    const num = Math.max(0, Math.floor(Number(v) || 0));
+    this.store.updateQuestion<ChoiceQuestion>(
+      q.id,
+      draft => {
+        const maxAllowed = draft.props.maxSelect ?? draft.options.length;
+        draft.props.minSelect = Math.min(num, maxAllowed);
+        if (draft.required && draft.props.minSelect === 0) draft.props.minSelect = 1;
+      },
+      { label: 'Set min selections', batch: true }
+    );
   }
-  setOther(v: boolean) {
-    this.store.updateQuestion<ChoiceQuestion>(this.id(), 'Toggle other', q => q.props.other = v);
+
+  setMax(v: string) {
+    const q = this.q()!;
+    const raw = v.trim();
+    this.store.updateQuestion<ChoiceQuestion>(
+      q.id,
+      draft => {
+        if (raw === '') {
+          draft.props.maxSelect = null; // unlimited
+        } else {
+          let n = Math.max(1, Math.floor(Number(raw) || 1));
+          const maxReal = draft.options.length;
+          n = Math.min(n, maxReal);
+          if (n < draft.props.minSelect) draft.props.minSelect = n;
+          draft.props.maxSelect = n;
+        }
+      },
+      { label: 'Set max selections', batch: true }
+    );
   }
-  setLayout(v: 'list'|'grid') {
-    this.store.updateQuestion<ChoiceQuestion>(this.id(), 'Change layout', q => q.props.layout = v);
+
+  startEdit(_field: 'title' | 'help') {
+    this.store.beginBatch('Edit question text');
   }
+
+  setTitle(v: string) {
+    if (!this.q) return;
+    this.store.updateQuestionTitle(this.q()!.id, v, { batch: true });
+  }
+
+  setHelp(v: string) {
+    if (!this.q) return;
+    this.store.updateQuestionHelpText(this.q()!.id, v, { batch: true });
+  }
+
+  onPickIcon(optId: string, icon: string) {
+    this.store.setOptionIcon(this.q().id, optId, icon); // <-- tracked by history
+  }
+
+  onLabel(optId: string, v: string) {
+    this.store.setOptionLabel(this.q().id, optId, v, { batch: true }); // batch while typing
+  }
+
+  remove(optId: string) {
+    this.store.removeOption(this.q().id, optId);
+  }
+
+  removeById(optId: string, ev?: Event) {
+    ev?.stopPropagation();
+    this.store.removeOption(this.q().id, optId);
+  }
+
+  commitEdit() {
+    this.store.endBatch();
+  }
+
+  //#region Deletebutton
+
+  isCounting = false; // showing 3..2..1
+  isArmed = false; // button is enabled & ready to click
+  countdown = 3;
+  private deleteTimer: any | null = null;
+
+  armDelete() {
+    if (this.isArmed || this.isCounting) return;
+    this.isCounting = true;
+    this.countdown = 3;
+
+    this.deleteTimer = setInterval(() => {
+      this.countdown--;
+      if (this.countdown <= 0) {
+        this.isCounting = false;
+        this.isArmed = true; // enable button
+        clearInterval(this.deleteTimer!);
+        this.deleteTimer = null;
+      }
+    }, 1000);
+  }
+
+  disarmDelete() {
+    if (this.deleteTimer) {
+      clearInterval(this.deleteTimer);
+      this.deleteTimer = null;
+    }
+    this.isCounting = false;
+    this.isArmed = false;
+    this.countdown = 3;
+  }
+
+  confirmDelete() {
+    if (!this.isArmed) return;
+    // Call your store delete (adjust to your API)
+    this.store.deleteQuestion(this.q().id);
+    // clean/reset UI state
+    this.disarmDelete();
+  }
+
+  ngOnDestroy() {
+    if (this.deleteTimer) clearInterval(this.deleteTimer);
+  }
+
+  //#endregion
 }

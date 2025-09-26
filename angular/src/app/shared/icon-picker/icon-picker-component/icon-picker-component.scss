@@ -1,0 +1,52 @@
+/* trigger (small button next to option input) */
+.icon-trigger {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:36px; height:36px; border:1px solid var(--border);
+  border-radius:8px; background:var(--card); cursor:pointer;
+}
+
+/* full-viewport overlay */
+.picker-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  display: grid; place-items: center;
+  background: rgba(0,0,0,.45);
+}
+
+/* centered modal */
+.picker-modal {
+  width: 720px; max-width: calc(100vw - 32px); max-height: calc(100vh - 32px);
+  display:flex; flex-direction:column; gap:12px;
+  background: var(--panel, #fff); border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  padding: 16px;
+  overflow: hidden;
+}
+
+.panel-header {
+  display:flex; gap:12px; align-items:center; justify-content:space-between;
+  .search-wrap { flex:1; }
+  input {
+    width:100%; height:40px; padding:0 12px; border-radius:10px;
+    border:1px solid var(--border); background: var(--input, #fff);
+  }
+  .btn.ghost {
+    display:inline-flex; gap:8px; align-items:center;
+    padding:8px 12px; border-radius:10px; border:1px solid var(--border);
+    background:var(--card); cursor:pointer;
+  }
+}
+
+.icons-grid {
+  overflow:auto; padding:6px; display:grid; gap:10px;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+}
+
+.icon-item {
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  padding:12px; border:1px solid var(--border); border-radius:12px;
+  background:var(--card); cursor:pointer;
+  iconify-icon { font-size:26px; color:var(--foreground); }
+  .name { font-size:12px; color:var(--muted-foreground); }
+}
+
+.panel-footer { display:flex; justify-content:flex-end; gap:8px; }

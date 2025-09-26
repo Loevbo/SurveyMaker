@@ -1,0 +1,47 @@
+<!-- Trigger button (envelope) -->
+<button class="icon-trigger" type="button" (click)="open()">
+  <iconify-icon [icon]="icon()"></iconify-icon>
+</button>
+
+<!-- Modal overlay -->
+@if (opened()) {
+  <div
+    class="picker-overlay"
+    (click)="onBackdropClick($event)"
+    (keydown)="onKeydown($event)"
+    tabindex="-1"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div class="picker-modal" role="document">
+      <div class="panel-header">
+        <div class="search-wrap">
+          <input
+            type="text"
+            [ngModel]="search()"
+            (ngModelChange)="search.set($event)"
+            placeholder="Search icons..."
+          />
+        </div>
+
+        <button class="btn ghost" type="button" (click)="reset()">
+          <iconify-icon icon="lucide:rotate-ccw"></iconify-icon>
+          Reset
+        </button>
+      </div>
+
+      <div class="icons-grid">
+        @for (ic of filteredIcons(); track ic) {
+          <button class="icon-item" type="button" (click)="useCurrent(ic)">
+            <iconify-icon [icon]="ic"></iconify-icon>
+            <div class="name">{{ ic.split(':')[1] }}</div>
+          </button>
+        }
+      </div>
+
+      <div class="panel-footer">
+        <button class="btn ghost" type="button" (click)="close()">Cancel</button>
+      </div>
+    </div>
+  </div>
+}
