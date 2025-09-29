@@ -1,6 +1,6 @@
 import { Injectable, computed, effect, signal } from '@angular/core';
 import { enablePatches, produceWithPatches, applyPatches, Draft, Patch } from 'immer';
-import { SurveyDoc, Question, Id, ChoiceQuestion } from '../types/surveyDoc.types';
+import { SurveyDoc, Question, Id, ChoiceQuestion, QuestionType } from '../types/surveyDoc.types';
 import { QUESTION_DEF_BY_TYPE } from '../survey-create/question-catalog';
 
 enablePatches();
@@ -309,41 +309,294 @@ export class SurveyStore {
     });
   }
 
-  DEFAULT_HELP: Record<Question['type'], string> = {
+  private static readonly GENERIC_HELP = 'Please provide your answer.';
+
+  private static readonly DEFAULT_HELP = {
     singleChoice: 'Ask one clear question and offer a few options.',
     multiChoice: 'Choose one or more options.',
     shortText: 'Keep it short and sweet.',
     longText: 'Provide a longer, descriptive answer.',
     rating: 'Rate on the given scale.',
-    date: 'Pick a date/time.',
-  };
+    date: 'Pick a date.',
+    time: 'Pick a time.',
+    dateTime: 'Pick a date and time.',
+  } satisfies Partial<Record<QuestionType, string>>;
+
+  private helpFor(type: QuestionType): string {
+    return SurveyStore.DEFAULT_HELP[type] ?? SurveyStore.GENERIC_HELP;
+  }
 
   // ---- creation factory (uses catalog) ----
-  private _createQuestion(type: Question['type']): Question {
-    const def = QUESTION_DEF_BY_TYPE[type];
+  private _createQuestion(type: QuestionType): Question {
+    const base = {
+      id: guid(),
+      type,
+      title: 'New question',
+      helpText: this.helpFor(type),
+      required: false,
+      rules: [] as any[],
+    };
 
-    const id = crypto.randomUUID?.() ?? Math.random().toString(36).slice(2);
-    if (type === 'singleChoice' || type === 'multiChoice') {
-      const single = type === 'singleChoice';
-      return {
-        id,
-        type,
-        title: 'New question',
-        helpText: this.DEFAULT_HELP[type] ?? '',
-        required: false,
-        rules: [],
-        options: [],
-        props: {
-          shuffle: false,
-          other: false,
-          layout: 'list',
-          minSelect: single ? 1 : 0,
-          maxSelect: single ? 1 : null,
-        },
-      };
+    switch (type) {
+      case 'singleChoice':
+        return {
+          ...base,
+          type,
+          options: [
+            { id: guid(), label: 'Option', icon: 'lucide:shapes' },
+            { id: guid(), label: 'Option', icon: 'lucide:star' },
+          ],
+          props: { layout: 'list', shuffle: false, other: false, minSelect: 1 },
+        };
+
+      case 'multiChoice':
+        return {
+          ...base,
+          type,
+          options: [
+            { id: guid(), label: 'Option', icon: 'lucide:check-circle' },
+            { id: guid(), label: 'Option', icon: 'lucide:check-circle' },
+          ],
+          props: {
+            layout: 'list',
+            shuffle: false,
+            other: false,
+            minSelect: 0,
+            maxSelect: undefined,
+          },
+        };
+
+      case 'dropdown':
+        return {
+          ...base,
+          type,
+          options: [
+            { id: guid(), label: 'Option' },
+            { id: guid(), label: 'Option' },
+          ],
+          props: { placeholder: 'Choose…', searchable: true, clearable: true },
+        };
+
+      case 'multiSelect':
+        return {
+          ...base,
+          type,
+          options: [
+            { id: guid(), label: 'Option' },
+            { id: guid(), label: 'Option' },
+          ],
+          props: {
+            placeholder: 'Choose…',
+            searchable: true,
+            clearable: true,
+            maxSelect: undefined,
+          },
+        };
+
+      case 'yesNo':
+        return { ...base, type, props: { onLabel: 'Yes', offLabel: 'No', default: false } };
+
+      case 'number':
+        return {
+          ...base,
+          type,
+          props: { min: undefined, max: undefined, step: 1, unit: '', thousandSeparator: false },
+        };
+
+      case 'slider':
+        return {
+          ...base,
+          type,
+          props: { min: 0, max: 100, step: 1, showTicks: false, showValue: true },
+        };
+
+      case 'shortText':
+        return {
+          ...base,
+          type,
+          props: { placeholder: 'Your answer…', multiline: false, charLimit: 100 },
+        };
+
+      case 'longText':
+        return {
+          ...base,
+          type,
+          props: { placeholder: 'Write your answer…', multiline: true, charLimit: 1000 },
+        };
+
+      case 'email':
+        return {
+          ...base,
+          type,
+          props: { placeholder: 'name@example.com', multiline: false, pattern: '.+@.+' },
+        };
+
+      case 'phone':
+        return {
+          ...base,
+          type,
+          props: { placeholder: '+1 555 000 0000', multiline: false, pattern: '^[+0-9 ()-]{6,}$' },
+        };
+
+      case 'url':
+        return {
+          ...base,
+          type,
+          props: { placeholder: 'https://example.com', multiline: false, pattern: '^https?://' },
+        };
+
+      case 'date':
+        return {
+          ...base,
+          type,
+          props: { mode: 'date', min: undefined, max: undefined, format: 'yyyy-MM-dd' },
+        };
+
+      case 'time':
+        return {
+          ...base,
+          type,
+          props: { mode: 'time', min: undefined, max: undefined, format: 'HH:mm' },
+        };
+
+      case 'dateTime':
+        return {
+          ...base,
+          type,
+          props: { mode: 'datetime', min: undefined, max: undefined, format: 'yyyy-MM-dd HH:mm' },
+        };
+
+      case 'country':
+        return {
+          ...base,
+          type,
+          options: [], // generate when rendering/prop editing
+          props: {
+            placeholder: 'Select a country',
+            searchable: true,
+            clearable: true,
+            showFlags: true,
+          },
+        };
+
+      case 'fileUpload':
+        return {
+          ...base,
+          type,
+          props: { accept: '', maxFiles: 1, maxSizeMB: 10, storagePath: '/uploads' },
+        };
+
+      case 'imageChoice':
+        return {
+          ...base,
+          type,
+          options: [
+            { id: guid(), label: 'Option', imageUrl: '' },
+            { id: guid(), label: 'Option', imageUrl: '' },
+          ],
+          props: { layout: 'grid', multi: false },
+        };
+
+      case 'signature':
+        return { ...base, type, props: { strokeWidth: 2, bg: '#fff', exportType: 'png' } };
+
+      case 'rating':
+        return { ...base, type, props: { scaleMin: 1, scaleMax: 5, icon: 'star', labels: [] } };
+
+      case 'nps':
+        return {
+          ...base,
+          type,
+          props: {
+            min: 0,
+            max: 10,
+            leftLabel: 'Not at all likely',
+            rightLabel: 'Extremely likely',
+          },
+        };
+
+      case 'opinionScale':
+        return {
+          ...base,
+          type,
+          props: { min: 1, max: 7, step: 1, leftLabel: 'Disagree', rightLabel: 'Agree' },
+        };
+
+      case 'ranking':
+        return {
+          ...base,
+          type,
+          options: [
+            { id: guid(), label: 'Option' },
+            { id: guid(), label: 'Option' },
+            { id: guid(), label: 'Option' },
+          ],
+          props: { limitTopN: undefined },
+        };
+
+      case 'matrixSingle':
+        return {
+          ...base,
+          type,
+          props: {
+            rows: ['Row 1', 'Row 2'],
+            columns: ['Poor', 'OK', 'Good'],
+            requiredPerRow: false,
+          },
+        };
+
+      case 'matrixMulti':
+        return {
+          ...base,
+          type,
+          props: {
+            rows: ['Row 1', 'Row 2'],
+            columns: ['A', 'B', 'C'],
+            minPerRow: 0,
+            maxPerRow: undefined,
+          },
+        };
+
+      case 'section':
+        return {
+          ...base,
+          type,
+          title: 'Section title',
+          helpText: undefined,
+          required: false,
+          props: { richText: 'Section content…', showDivider: true },
+        };
+
+      case 'consent':
+        return {
+          ...base,
+          type,
+          props: { text: 'I agree to the terms', linkToTerms: '' },
+          required: true,
+        };
+
+      case 'address':
+        return {
+          ...base,
+          type,
+          props: {
+            showStreet: true,
+            showCity: true,
+            showState: true,
+            showZip: true,
+            showCountry: true,
+            autoComplete: true,
+          },
+        };
+
+      default:
+        // fallback to a simple shortText
+        return {
+          ...base,
+          type: 'shortText',
+          props: { placeholder: 'Your answer…', multiline: false },
+        } as any;
     }
-
-    if (!def) throw new Error(`Unknown question type: ${type as string}`);
   }
 
   selectedQuestion = computed(() => {
@@ -443,21 +696,103 @@ export class SurveyStore {
   }
 
   addChoiceOption(qid: Id, label = 'Option', icon?: string) {
-  this.update('Add option', d => {
-    for (const p of d.pages) {
-      const q = p.questions.find(x => x.id === qid) as ChoiceQuestion | undefined;
-      if (!q) continue;
+    this.update('Add option', d => {
+      for (const p of d.pages) {
+        const q = p.questions.find(x => x.id === qid) as ChoiceQuestion | undefined;
+        if (!q) continue;
 
-      const newLabel = label ?? `Option ${q.options.length + 1}`;
-      const newIcon  = icon  ?? 'lucide:shapes';   // full icon name
+        const newLabel = label ?? `Option ${q.options.length + 1}`;
+        const newIcon = icon ?? 'lucide:shapes'; // full icon name
 
-      q.options.push({
-        id: crypto.randomUUID?.() ?? Math.random().toString(36).slice(2),
-        label: newLabel,
-        icon: newIcon,
-      });
-      break;
-    }
-  });
-}
+        q.options.push({
+          id: crypto.randomUUID?.() ?? Math.random().toString(36).slice(2),
+          label: newLabel,
+          icon: newIcon,
+        });
+        break;
+      }
+    });
+  }
+
+  setRequired(qid: Id, required: boolean) {
+    this.update('Set required', d => {
+      for (const p of d.pages) {
+        const q = p.questions.find(x => x.id === qid);
+        if (!q) continue;
+
+        q.required = required;
+
+        const props: any = q.props ?? (q.props = {});
+        // be robust to undefined/strings
+        const curMin =
+          typeof props.minSelect === 'number'
+            ? props.minSelect
+            : Number.isFinite(+props.minSelect)
+            ? +props.minSelect
+            : 0;
+
+        if (required) {
+          // Only raise to 1 if it's below 1; never lower an existing higher value
+          props.minSelect = Math.max(curMin, 1);
+        }
+        // else: don't touch minSelect when turning required off
+        break;
+      }
+    });
+  }
+
+  setMinSelect(qid: Id, min: number) {
+    this.update('Set min selections', d => {
+      for (const p of d.pages) {
+        const q = p.questions.find(x => x.id === qid);
+        if (!q) continue;
+
+        const props: any = q.props ?? (q.props = {});
+        const requiredMin = q.required ? 1 : 0;
+
+        let nextMin = Math.floor(Number.isFinite(min) ? min : 0);
+        nextMin = Math.max(requiredMin, nextMin);
+
+        const curMax = Number.isFinite(props.maxSelect)
+          ? props.maxSelect
+          : Number.isFinite(+props.maxSelect)
+          ? +props.maxSelect
+          : 0;
+
+        if (curMax > 0 && nextMin > curMax) {
+          // policy: bump max to keep invariant
+          props.maxSelect = nextMin;
+        }
+
+        props.minSelect = nextMin;
+        break;
+      }
+    });
+  }
+
+  setMaxSelect(qid: Id, max: number) {
+    this.update('Set max selections', d => {
+      for (const p of d.pages) {
+        const q = p.questions.find(x => x.id === qid);
+        if (!q) continue;
+
+        const props: any = q.props ?? (q.props = {});
+        const curMin = Number.isFinite(props.minSelect)
+          ? props.minSelect
+          : Number.isFinite(+props.minSelect)
+          ? +props.minSelect
+          : 0;
+
+        let nextMax = Math.floor(Number.isFinite(max) ? max : 0);
+        nextMax = Math.max(0, nextMax); // 0 => “no limit”
+
+        if (nextMax > 0 && nextMax < curMin) {
+          nextMax = curMin; // keep invariant: max >= min (if max != 0)
+        }
+
+        props.maxSelect = nextMax;
+        break;
+      }
+    });
+  }
 }

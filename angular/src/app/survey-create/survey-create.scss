@@ -28,6 +28,7 @@
     --radius-lg: 24px;
     --radius-xl: 48px;
     --font-family-body: "Inter", "Inter Fallback";
+    --topbar-h: 68px;
     font-family: var(--font-family-body);
 
     ._app {
@@ -244,6 +245,9 @@
                 background: var(--card);
                 display: flex;
                 flex-direction: column;
+                overflow: hidden;
+                top: var(--topbar-h, 0px);
+                height: calc(100vh - var(--topbar-h, 0px));
                 .rp-header {
                     padding: 0px 16px;
                     border-bottom: 1px solid var(--border);

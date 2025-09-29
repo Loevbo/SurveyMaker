@@ -141,50 +141,24 @@ export class QChoicePropsComponent {
     this.store.endBatch();
   }
 
-  //#region Deletebutton
-
-  isCounting = false; // showing 3..2..1
-  isArmed = false; // button is enabled & ready to click
-  countdown = 3;
-  private deleteTimer: any | null = null;
-
-  armDelete() {
-    if (this.isArmed || this.isCounting) return;
-    this.isCounting = true;
-    this.countdown = 3;
-
-    this.deleteTimer = setInterval(() => {
-      this.countdown--;
-      if (this.countdown <= 0) {
-        this.isCounting = false;
-        this.isArmed = true; // enable button
-        clearInterval(this.deleteTimer!);
-        this.deleteTimer = null;
-      }
-    }, 1000);
+  toggleRequired(ev?: Event) {
+    ev?.stopPropagation();
+    const curr = this.q().required;
+    this.store.setRequired(this.q().id, !curr); // uses your store helper; participates in undo/redo
   }
 
-  disarmDelete() {
-    if (this.deleteTimer) {
-      clearInterval(this.deleteTimer);
-      this.deleteTimer = null;
+  onToggleKey(e: KeyboardEvent) {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      this.toggleRequired(e);
     }
-    this.isCounting = false;
-    this.isArmed = false;
-    this.countdown = 3;
   }
 
-  confirmDelete() {
-    if (!this.isArmed) return;
-    // Call your store delete (adjust to your API)
-    this.store.deleteQuestion(this.q().id);
-    // clean/reset UI state
-    this.disarmDelete();
+  onMinChange(n: number) {
+    this.store.setMinSelect(this.q().id, Number.isFinite(n) ? n : 0);
   }
 
-  ngOnDestroy() {
-    if (this.deleteTimer) clearInterval(this.deleteTimer);
+  onMaxChange(n: number) {
+    this.store.setMaxSelect(this.q().id, Number.isFinite(n) ? n : 0);
   }
-
-  //#endregion
 }

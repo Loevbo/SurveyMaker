@@ -59,39 +59,47 @@
   <div class="label">Validation</div>
   <div class="row space-between">
     <div>Required</div>
-    <div class="toggle on">
+    <div
+      class="toggle"
+      [class.on]="q().required"
+      role="switch"
+      [attr.aria-checked]="q().required"
+      tabindex="0"
+      (click)="toggleRequired($event)"
+      (keydown)="onToggleKey($event)"
+      (mousedown)="$event.preventDefault()"
+    >
       <div class="knob"></div>
     </div>
   </div>
   <div class="row space-between">
     <div>Min selections</div>
     <div class="number">
-      <input type="number" />
+      <input
+        type="number"
+        [attr.min]="q().required ? 1 : 0"
+        [max]="q().options.length"
+        [disabled]="q().type === 'singleChoice'"
+        [value]="q().props.minSelect ?? 0"
+        (input)="onMinChange($event.target.valueAsNumber)"
+      />
     </div>
   </div>
+
   <div class="row space-between">
     <div>Max selections</div>
     <div class="number">
-      <input type="number" />
+      <input
+        type="number"
+        [min]="0"
+        [max]="q().options.length"
+        [disabled]="q().type === 'singleChoice'"
+        [value]="q().props.maxSelect ?? ''"
+        (input)="onMaxChange($event.target.valueAsNumber)"
+        placeholder="—"
+      />
     </div>
   </div>
 </div>
-<div class="panel-footer">
-  <div
-    class="btn delete fixed"
-    [class.counting]="isCounting"
-    [class.armed]="isArmed"
-    [disabled]="!isArmed"
-    (mouseenter)="armDelete()"
-    (mouseleave)="disarmDelete()"
-    (click)="confirmDelete()"
-    type="button"
-    aria-live="polite"
-  >
-    <span class="sizer">Delete</span>
 
-    <!-- actual visible text -->
-    <span class="label"> {{ isCounting ? countdown : 'Delete' }} </span>
-  </div>
-</div>
 }

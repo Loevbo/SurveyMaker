@@ -1,4 +1,13 @@
-import { Component, signal, CUSTOM_ELEMENTS_SCHEMA, inject, computed, ElementRef, ViewChild } from '@angular/core';
+import {
+  Component,
+  signal,
+  CUSTOM_ELEMENTS_SCHEMA,
+  inject,
+  computed,
+  ElementRef,
+  ViewChild,
+  effect,
+} from '@angular/core';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { SurveyStore } from '../stores/survey-store';
 import { HttpClient } from '@angular/common/http';
@@ -13,33 +22,37 @@ import { QChoicePropsComponent } from './subComponents/qchoice-props-component/q
 
 @Component({
   selector: 'app-survey-create',
-  imports: [FontAwesomeModule,
+  imports: [
+    FontAwesomeModule,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
     DragDropModule,
     QChoiceComponent,
-    QChoicePropsComponent],
+    QChoicePropsComponent,
+  ],
   templateUrl: './survey-create.html',
   styleUrl: './survey-create.scss',
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-
-
-
-
-
 export class SurveyCreate {
+
+  constructor() {
+    effect(() => {
+      const sel = this.store.selectedQuestion?.() ?? this.store.selectedQuestionId?.();
+      if (!sel) this.disarmDelete();
+    })
+  }
+
 
   private http = inject(HttpClient);
   store = inject(SurveyStore);
 
-
   // Signals & derived state (super fast)
-  
+
   catalog = QUESTION_CATALOG;
-  doc = this.store.doc;                                 // SurveyDoc signal
-  selectedId = this.store.selectedQuestionId;           // selected question signal
+  doc = this.store.doc; // SurveyDoc signal
+  selectedId = this.store.selectedQuestionId; // selected question signal
   canUndo = this.store.canUndo;
   canRedo = this.store.canRedo;
   isDirty = this.store.isDirty;
@@ -50,18 +63,19 @@ export class SurveyCreate {
   });
 
   // ---------- Toolbar actions ----------
-  undo() { this.store.undo(); }
-  redo() { this.store.redo(); }
-
+  undo() {
+    this.store.undo();
+  }
+  redo() {
+    this.store.redo();
+  }
 
   save() {
     const snapshot = this.store.snapshot();
-    this.http.put<{version:number}>(`/api/surveys/${snapshot.id}`, snapshot)
+    this.http
+      .put<{ version: number }>(`/api/surveys/${snapshot.id}`, snapshot)
       .subscribe(res => this.store.markSaved(res.version));
   }
-
-
-
 
   //#region Title changes
 
@@ -80,12 +94,21 @@ export class SurveyCreate {
     // wait until the input is in the DOM
     requestAnimationFrame(() => {
       const el = this.titleBox?.nativeElement;
-      if (el) { el.focus(); el.select(); }
+      if (el) {
+        el.focus();
+        el.select();
+      }
     });
   }
 
   onTitleInput(v: string) {
-    this.store.update('Edit survey title', d => { d.title = v; }, { batch: true });
+    this.store.update(
+      'Edit survey title',
+      d => {
+        d.title = v;
+      },
+      { batch: true }
+    );
   }
 
   commitTitle() {
@@ -96,14 +119,13 @@ export class SurveyCreate {
   cancelTitle() {
     // drop the batched edits and restore the old value
     this.store.cancelBatch?.();
-    this.store.update('Revert title', d => { d.title = this.titleBeforeEdit; });
+    this.store.update('Revert title', d => {
+      d.title = this.titleBeforeEdit;
+    });
     this.editingTitle = false;
   }
 
   //#endregion
-
-
-
 
   // click-to-add
   addFromPalette(def: QuestionDef) {
@@ -131,13 +153,56 @@ export class SurveyCreate {
     // (later) cross-page moves would be handled here
   }
 
-
   openProps(id: string) {
     this.store.selectQuestion(id);
   }
 
+  //#region Deletebutton
 
+  isCounting = false; // showing 3..2..1
+  isArmed = false; // button is enabled & ready to click
+  countdown = 3;
+  private deleteTimer: any | null = null;
 
+  armDelete() {
+    if (this.isArmed || this.isCounting) return;
+    this.isCounting = true;
+    this.countdown = 3;
 
+    this.deleteTimer = setInterval(() => {
+      this.countdown--;
+      if (this.countdown <= 0) {
+        this.isCounting = false;
+        this.isArmed = true; // enable button
+        clearInterval(this.deleteTimer!);
+        this.deleteTimer = null;
+      }
+    }, 1000);
+  }
 
+  disarmDelete() {
+    if (this.deleteTimer) {
+      clearInterval(this.deleteTimer);
+      this.deleteTimer = null;
+    }
+    this.isCounting = false;
+    this.isArmed = false;
+    this.countdown = 3;
+  }
+
+  confirmDelete() {
+    if (!this.isArmed) return;
+    // Call your store delete (adjust to your API)
+    const id = this.store.selectedQuestionId(); // <— no q needed here
+    if (!id) return;
+    this.store.deleteQuestion(id);
+    // clean/reset UI state
+    this.disarmDelete();
+  }
+
+  ngOnDestroy() {
+    if (this.deleteTimer) clearInterval(this.deleteTimer);
+  }
+
+  //#endregion
 }

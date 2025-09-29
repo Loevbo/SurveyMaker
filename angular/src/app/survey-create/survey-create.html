@@ -177,15 +177,50 @@
       <aside class="rightpanel">
         <div class="rp-header">Properties</div>
 
-        @if (store.selectedQuestion()) { @switch (store.selectedQuestion()!.type) { @case
-        ('singleChoice') {
-        <app-qchoice-props style="display: flex; flex-direction: column; height: 100%" /> } @case
-        ('multiChoice') {
-        <app-qchoice-props style="display: flex; flex-direction: column; height: 100%" /> } @case
-        ('shortText') { <app-q-text-props /> } @case ('longText') { <app-q-text-props /> } @case
-        ('rating') { <app-q-rating-props /> } @case ('date') { <app-q-date-props /> } } } @else {
-        <div class="rp-empty">Select a question to edit its properties.</div>
+        <!-- wrapper that fills the right panel -->
+        <div class="props-wrap">
+          <!-- scrollable middle area -->
+          <div class="props-body">
+            @if (store.selectedQuestion()) { @switch (store.selectedQuestion()!.type) { @case
+            ('singleChoice') {
+            <app-qchoice-props [q]="store.selectedQuestion()!" [multi]="false"></app-qchoice-props>
+            } @case ('multiChoice') {
+            <app-qchoice-props [q]="store.selectedQuestion()!" [multi]="true"></app-qchoice-props>
+            } @case ('shortText') {
+            <app-q-text-props [q]="store.selectedQuestion()!"></app-q-text-props>
+            } @case ('longText') {
+            <app-q-text-props [q]="store.selectedQuestion()!" [long]="true"></app-q-text-props>
+            } @case ('rating') {
+            <app-q-rating-props [q]="store.selectedQuestion()!"></app-q-rating-props>
+            } @case ('date') {
+            <app-q-date-props [q]="store.selectedQuestion()!"></app-q-date-props>
+            } } } @else {
+            <div class="rp-empty">Select a question to edit its properties.</div>
+            }
+          </div>
+
+          @if(store.selectedQuestion()){
+
+            <!-- sticky footer pinned to bottom of the right panel -->
+            <div class="panel-footer">
+              <div
+              class="btn delete fixed"
+              [class.counting]="isCounting"
+              [class.armed]="isArmed"
+              [class.is-disabled]="!isArmed"
+              [attr.aria-disabled]="!isArmed"
+              (mouseenter)="armDelete()"
+              (mouseleave)="disarmDelete()"
+              (click)="confirmDelete()"
+              type="button"
+              aria-live="polite"
+              >
+              <span class="sizer">Delete</span>
+              <span class="label">{{ isCounting ? countdown : 'Delete' }}</span>
+            </div>
+          </div>
         }
+        </div>
       </aside>
     </div>
   </div>
