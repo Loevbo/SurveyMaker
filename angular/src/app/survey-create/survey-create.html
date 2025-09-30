@@ -194,6 +194,10 @@
             @if (store.selectedQuestion()) { @switch (store.selectedQuestion()!.type) { @case
             ('singleChoice') {
             <app-qchoice-props [q]="store.selectedQuestion()!" [multi]="false"></app-qchoice-props>
+            } @case ('dropdown') {
+              <app-qdropdown-props [q]="store.selectedQuestion()!" [multi]="false"></app-qdropdown-props>
+            } @case ('multiSelect') {
+              <app-qdropdown-props [q]="store.selectedQuestion()!" [multi]="true"></app-qdropdown-props>
             } @case ('multiChoice') {
             <app-qchoice-props [q]="store.selectedQuestion()!" [multi]="true"></app-qchoice-props>
             } @case ('shortText') {

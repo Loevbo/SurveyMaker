@@ -371,8 +371,6 @@ export class SurveyStore {
           ...base,
           type,
           options: [
-            { id: guid(), label: 'Option' },
-            { id: guid(), label: 'Option' },
           ],
           props: { placeholder: 'Choose…', searchable: true, clearable: true },
         };
@@ -382,8 +380,6 @@ export class SurveyStore {
           ...base,
           type,
           options: [
-            { id: guid(), label: 'Option' },
-            { id: guid(), label: 'Option' },
           ],
           props: {
             placeholder: 'Choose…',

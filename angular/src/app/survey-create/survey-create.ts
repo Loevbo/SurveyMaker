@@ -20,6 +20,7 @@ import { Question } from '../types/surveyDoc.types';
 import { QChoiceComponent } from './subComponents/qchoice-component/qchoice-component';
 import { QChoicePropsComponent } from './subComponents/qchoice-props-component/qchoice-props-component';
 import { QdropdownComponent } from './subComponents/qdropdown-component/qdropdown-component.component';
+import { QdropdownPropsComponent } from './subComponents/qdropdown-props-component/qdropdown-props-component';
 
 @Component({
   selector: 'app-survey-create',
@@ -31,7 +32,8 @@ import { QdropdownComponent } from './subComponents/qdropdown-component/qdropdow
     DragDropModule,
     QChoiceComponent,
     QChoicePropsComponent,
-    QdropdownComponent
+    QdropdownComponent,
+    QdropdownPropsComponent
   ],
   templateUrl: './survey-create.html',
   styleUrl: './survey-create.scss',

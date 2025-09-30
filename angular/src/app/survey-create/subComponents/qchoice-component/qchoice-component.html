@@ -60,7 +60,7 @@
   </div>
   <div class="divider"></div>
   <div class="row space-between">
-    <div class="muted">Required</div>
+    <div class="muted">@if (!q?.required) { <s>Required</s> } @if (q?.required) { Required }</div>
     <div class="muted">{{q.type == 'multiChoice' ? 'Multiple Answer' : 'Single Answer'}}</div>
   </div>
 </div>
