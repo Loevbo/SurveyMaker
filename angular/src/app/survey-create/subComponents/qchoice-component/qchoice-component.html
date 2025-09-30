@@ -13,7 +13,7 @@
         style="font-size: 18px; color: var(--foreground)"
       ></iconify-icon>
     </div>
-    <div class="btn icon ghost">
+    <div class="btn icon ghost" (click)="store.duplicateQuestion(q.id)">
       <iconify-icon
         icon="lucide:copy"
         style="font-size: 18px; color: var(--foreground)"
@@ -25,13 +25,13 @@
         style="font-size: 18px; color: var(--foreground)"
       ></iconify-icon>
     </div>
-    <div class="btn primary">
+    <!-- <div class="btn primary">
       <iconify-icon
         icon="lucide:check"
         style="font-size: 18px; color: var(--primary-foreground)"
       ></iconify-icon>
       Done
-    </div>
+    </div> -->
   </div>
 </div>
 <div class="qc-body">

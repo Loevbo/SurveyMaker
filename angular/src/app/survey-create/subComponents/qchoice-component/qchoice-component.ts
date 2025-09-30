@@ -5,7 +5,7 @@ import { ChoiceQuestion } from 'src/app/types/surveyDoc.types';
 
 @Component({
   selector: 'app-qchoice-component',
-  standalone:true,
+  standalone: true,
   imports: [CommonModule],
   templateUrl: './qchoice-component.html',
   styleUrl: './qchoice-component.scss',

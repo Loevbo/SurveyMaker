@@ -165,6 +165,16 @@
                   [q]="q"
                   [multi]="q.type === 'multiChoice'"
                 ></app-qchoice-component>
+                } @case ('dropdown') {
+                <app-qdropdown-component
+                  [q]="q"
+                  [multi]="q.type === 'multiSelect'"
+                ></app-qdropdown-component>
+                } @case ('multiSelect') {
+                <app-qdropdown-component
+                  [q]="q"
+                  [multi]="q.type === 'multiSelect'"
+                ></app-qdropdown-component>
                 } }
               </div>
               }
@@ -201,9 +211,9 @@
 
           @if(store.selectedQuestion()){
 
-            <!-- sticky footer pinned to bottom of the right panel -->
-            <div class="panel-footer">
-              <div
+          <!-- sticky footer pinned to bottom of the right panel -->
+          <div class="panel-footer">
+            <div
               class="btn delete fixed"
               [class.counting]="isCounting"
               [class.armed]="isArmed"
@@ -214,12 +224,12 @@
               (click)="confirmDelete()"
               type="button"
               aria-live="polite"
-              >
+            >
               <span class="sizer">Delete</span>
               <span class="label">{{ isCounting ? countdown : 'Delete' }}</span>
             </div>
           </div>
-        }
+          }
         </div>
       </aside>
     </div>

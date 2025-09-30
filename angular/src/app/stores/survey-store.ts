@@ -1,5 +1,5 @@
 import { Injectable, computed, effect, signal } from '@angular/core';
-import { enablePatches, produceWithPatches, applyPatches, Draft, Patch } from 'immer';
+import { enablePatches, produceWithPatches, applyPatches, Draft, Patch, current } from 'immer';
 import { SurveyDoc, Question, Id, ChoiceQuestion, QuestionType } from '../types/surveyDoc.types';
 import { QUESTION_DEF_BY_TYPE } from '../survey-create/question-catalog';
 
@@ -728,8 +728,8 @@ export class SurveyStore {
           typeof props.minSelect === 'number'
             ? props.minSelect
             : Number.isFinite(+props.minSelect)
-            ? +props.minSelect
-            : 0;
+              ? +props.minSelect
+              : 0;
 
         if (required) {
           // Only raise to 1 if it's below 1; never lower an existing higher value
@@ -756,8 +756,8 @@ export class SurveyStore {
         const curMax = Number.isFinite(props.maxSelect)
           ? props.maxSelect
           : Number.isFinite(+props.maxSelect)
-          ? +props.maxSelect
-          : 0;
+            ? +props.maxSelect
+            : 0;
 
         if (curMax > 0 && nextMin > curMax) {
           // policy: bump max to keep invariant
@@ -780,8 +780,8 @@ export class SurveyStore {
         const curMin = Number.isFinite(props.minSelect)
           ? props.minSelect
           : Number.isFinite(+props.minSelect)
-          ? +props.minSelect
-          : 0;
+            ? +props.minSelect
+            : 0;
 
         let nextMax = Math.floor(Number.isFinite(max) ? max : 0);
         nextMax = Math.max(0, nextMax); // 0 => “no limit”
@@ -791,6 +791,34 @@ export class SurveyStore {
         }
 
         props.maxSelect = nextMax;
+        break;
+      }
+    });
+  }
+
+  duplicateQuestion(qid: Id) {
+    this.update('Duplicate question', d => {
+      for (const p of d.pages) {
+        const idx = p.questions.findIndex(x => x.id === qid);
+        if (idx < 0) continue;
+
+        const srcDraft = p.questions[idx] as Draft<Question>;
+
+        // 1) turn the draft into a plain object
+        const plain = current(srcDraft); // or: JSON.parse(JSON.stringify(srcDraft))
+
+        // 2) deep-clone the plain object
+        const clone: any = JSON.parse(JSON.stringify(plain));
+
+        // 3) new IDs for the question and any options
+        clone.id = guid();
+        if (Array.isArray(clone.options)) {
+          clone.options = clone.options.map((o: any) => ({ ...o, id: guid() }));
+        }
+
+        // 4) insert below source and select it
+        p.questions.splice(idx + 1, 0, clone);
+        this.selectedQuestionId.set(clone.id);
         break;
       }
     });

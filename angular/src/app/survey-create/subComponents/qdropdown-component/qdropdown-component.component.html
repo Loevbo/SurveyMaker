@@ -1,0 +1,127 @@
+@if(q){
+<div class="qc-head">
+  <div class="inline">
+    <div>
+      <div class="qc-title">{{ q.title }}</div>
+      <div class="desc">{{ q.helpText ?? 'Ask one clear question and offer a few options.' }}</div>
+    </div>
+  </div>
+  <div class="qc-actions">
+    <div class="btn icon ghost">
+      <iconify-icon
+        icon="lucide:grip-vertical"
+        style="font-size: 18px; color: var(--foreground)"
+      ></iconify-icon>
+    </div>
+    <div class="btn icon ghost" (click)="store.duplicateQuestion(q.id)">
+      <iconify-icon
+        icon="lucide:copy"
+        style="font-size: 18px; color: var(--foreground)"
+      ></iconify-icon>
+    </div>
+    <div class="btn icon ghost" (click)="openProps(q.id)">
+      <iconify-icon
+        icon="lucide:settings"
+        style="font-size: 18px; color: var(--foreground)"
+      ></iconify-icon>
+    </div>
+    <!-- <div class="btn primary">
+      <iconify-icon
+        icon="lucide:check"
+        style="font-size: 18px; color: var(--primary-foreground)"
+      ></iconify-icon>
+      Done
+    </div> -->
+  </div>
+</div>
+<div class="qc-body">
+  <div class="row">
+    @if (!multi) {
+    <div class="dropdown" [class.open]="open">
+      <div class="label-row">
+        <div class="muted">Single select</div>
+      </div>
+
+      <button class="field" type="button" (click)="toggle()">
+        <span>{{ selectedLabel }}</span>
+        <iconify-icon class="chev" icon="lucide:chevron-down"></iconify-icon>
+      </button>
+
+      @if (open) {
+      <div class="menu">
+        @for (o of options; track o.id) {
+        <div class="item" (click)="pick(o)">
+          <iconify-icon
+            [icon]="o.icon"
+            style="font-size: 18px; color: var(--foreground)"
+          ></iconify-icon>
+          <span>{{ o.label }}</span>
+          <div class="check">
+            <iconify-icon
+              [icon]="selected?.id === o.id ? 'lucide:check-circle-2' : 'lucide:circle'"
+              style="font-size: 16px; color: var(--muted-foreground)"
+            ></iconify-icon>
+          </div>
+        </div>
+        }
+      </div>
+      }
+    </div>
+    } @if (multi) {
+    <div class="dropdown" [class.open]="open">
+      <div class="label-row">
+        <div class="muted">Multiple select</div>
+        @if (selectedCount > 0) {
+        <span class="pill">{{ selectedCount }} selected</span>
+        }
+      </div>
+
+      <button class="field" type="button" (click)="toggle()">
+        @if (selectedMulti.length) {
+        <div class="chips">
+          @for (c of selectedMulti; track c.id) {
+          <span class="chip">
+            {{ c.label }}
+            <button class="x" type="button" (click)="$event.stopPropagation(); removeChip(c.id)">
+              <iconify-icon icon="lucide:x"></iconify-icon>
+            </button>
+          </span>
+          }
+        </div>
+        } @else {
+        <span>Choose</span>
+        }
+
+        <iconify-icon class="chev" icon="lucide:chevron-down"></iconify-icon>
+      </button>
+
+      @if (open) {
+      <div class="menu">
+        @for (o of options; track o.id) {
+        <div class="item" (click)="toggleMulti(o)">
+          <iconify-icon
+            [icon]="o.icon"
+            style="font-size: 18px; color: var(--foreground)"
+          ></iconify-icon>
+          <span>{{ o.label }}</span>
+          <div class="check">
+            <iconify-icon
+              [icon]="has(o) ? 'lucide:check' : 'lucide:square'"
+              style="font-size: 18px; color: var(--muted-foreground)"
+            ></iconify-icon>
+          </div>
+        </div>
+        }
+      </div>
+      }
+    </div>
+    }
+  </div>
+  <div class="divider"></div>
+  <div class="row space-between">
+    <div class="muted">Required</div>
+    <div class="muted">{{ q.type == 'multiSelect' ? 'Multiple Answer' : 'Single Answer' }}</div>
+  </div>
+</div>
+
+}
